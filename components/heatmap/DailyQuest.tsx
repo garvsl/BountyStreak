@@ -94,12 +94,12 @@ export default function DailyQuest() {
             </View>
           </View>
           <View className="px-6">
-            <View className="flex-1  bg-[#eefafa] p-2 rounded-2xl flex flex-row gap-1 justify-center items-center">
+            <View className="flex-1  bg-[#E6F4F4] p-2 rounded-2xl flex flex-row gap-1 justify-center items-center">
               <Text>
-                <MaterialCommunityIcons color="red" name="fire" size={18} />
+                <MaterialCommunityIcons color="#f75a37" name="fire" size={18} />
               </Text>
               <Text className="font-bold text-[#070b0f] font-[Kica-PERSONALUSE-Light]">
-                1 Day Streak
+                0 Day Streak
               </Text>
             </View>
           </View>
@@ -144,8 +144,8 @@ export default function DailyQuest() {
             </View>
           </View>
           <View className="px-6 flex gap-3 h-16 flex-row">
+            <ProgressButton big={"0"} small={"Dabaloons"} />
             <ProgressButton big={"3"} small={"Completed"} />
-            <ProgressButton big={"1"} small={"In Progress"} />
             <ProgressButton big={"23:54:12"} small={"Remaining"} />
           </View>
           <View className=" px-6 flex flex-col gap-4">
