@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MonthlyHeatmap from "@/components/heatmap/CalendarHeatmap";
+import { useState } from "react";
 
 const Quest = ({ title, amount, max, time = null }: any) => {
   const filledCount = Math.round((amount / max) * 6);
@@ -79,6 +80,40 @@ export default function DailyQuest() {
     textShadowRadius: 8,
   };
 
+  const [defaultItems, setDefaultItems] = useState([
+    {
+      id: 123,
+      title: "Recycle Plastic",
+      amount: 1,
+      max: 2,
+    },
+    {
+      id: 223,
+      title: "Recycle Glass",
+      amount: 0,
+      max: 2,
+    },
+    {
+      id: 332,
+      title: "Recycle Cardboard",
+      amount: 0,
+      max: 5,
+    },
+  ]);
+
+  const [filteredItems, setFilteredItems] = useState(defaultItems);
+
+  const onSearch = (searchText) => {
+    if (searchText) {
+      const searchResults = defaultItems.filter((item) =>
+        item.title.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredItems(searchResults);
+    } else {
+      setFilteredItems(defaultItems);
+    }
+  };
+
   return (
     <ScrollView className="bg-[#070b0f]">
       <View className="flex-1   gap-8">
@@ -129,6 +164,9 @@ export default function DailyQuest() {
                 color="#eefafa"
               />
               <TextInput
+                onChangeText={(text) => {
+                  onSearch(text);
+                }}
                 placeholder="Search Quests"
                 className=" h-12 font-[Kica-PERSONALUSE-Light] text-xs bg-[#171d25] text-[#eefafa]  rounded-2xl px-4 pl-12"
               />
@@ -149,9 +187,19 @@ export default function DailyQuest() {
             <ProgressButton big={"23:54:12"} small={"Remaining"} />
           </View>
           <View className=" px-6 flex flex-col gap-4">
-            <Quest title={"Recycle Plastic"} amount={1} max={2} />
-            <Quest title={"Recycle Glass"} amount={0} max={2} />
-            <Quest title={"Recycle Cardboard"} amount={3} max={4} />
+            {filteredItems.length === 0 ? (
+              <Quest title={"Theres Nothing..."} amount={0} max={0} />
+            ) : (
+              filteredItems.map((e) => (
+                <Quest
+                  key={e.id}
+                  title={e.title}
+                  amount={e.amount}
+                  max={e.max}
+                />
+              ))
+            )}
+
             <View className="bg-transparent w-full h-16 rounded-2xl"></View>
           </View>
         </View>
