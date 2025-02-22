@@ -51,21 +51,18 @@ export default function Leaderboard() {
   const [defaultItems, setDefaultItems] = useState([
     {
       id: 123,
-      title: "Recycle Plastic",
+      title: "Garv",
       amount: 1,
-      max: 2,
     },
     {
       id: 223,
-      title: "Recycle Glass",
-      amount: 0,
-      max: 2,
+      title: "Irvin",
+      amount: -1,
     },
     {
       id: 332,
-      title: "Recycle Cardboard",
+      title: "Alex",
       amount: 0,
-      max: 5,
     },
   ]);
 
@@ -100,6 +97,7 @@ export default function Leaderboard() {
             />
             <TextInput
               placeholder="Search"
+              onChangeText={onSearch}
               className=" h-12 font-[Kica-PERSONALUSE-Light] text-xs bg-[#171d25] text-[#eefafa]  rounded-2xl px-4 pl-12"
             />
           </View>
@@ -118,10 +116,15 @@ export default function Leaderboard() {
           <ProgressButton big={"1"} small={"In Progress"} />
           <ProgressButton big={"23:54:12"} small={"Remaining"} />
         </View> */}
+
         <View className=" px-6 flex flex-col gap-4">
-          <Quest title={"Irvin"} amount={999} />
-          <Quest title={"Garv"} amount={998} />
-          <Quest title={"Alex"} amount={998} />
+          {filteredItems.length === 0 ? (
+            <Quest title={"Theres Nothing..."} amount={0} max={0} />
+          ) : (
+            filteredItems.map((e) => (
+              <Quest key={e.id} title={e.title} amount={e.amount} />
+            ))
+          )}
           <View className="bg-transparent w-full h-16 rounded-2xl"></View>
         </View>
       </View>
