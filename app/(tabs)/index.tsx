@@ -14,6 +14,7 @@ import { useDatabase } from "@/db/provider";
 import { HabitCard } from "@/components/habit";
 import type { Habit } from "@/lib/storage";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DailyQuest from "@/components/heatmap/DailyQuest";
 
 export default function Home() {
   const { success, error } = useMigrationHelper();
@@ -45,11 +46,6 @@ function ScreenContent() {
   const ref = React.useRef(null);
   useScrollToTop(ref);
 
-  const renderItem = React.useCallback(
-    ({ item }: { item: Habit }) => <HabitCard {...item} />,
-    []
-  );
-
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-secondary/30">
@@ -58,46 +54,8 @@ function ScreenContent() {
     );
   }
   return (
-    <View className="flex flex-col basis-full bg-background  p-8 pt-0">
-      <SafeAreaView> </SafeAreaView>
-      <FlashList
-        ref={ref}
-        className="native:overflow-hidden rounded-t-lg"
-        estimatedItemSize={49}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={() => (
-          <View>
-            <Text className="text-lg">Hi There 👋</Text>
-            <Text className="text-sm">
-              This example use sql.js on Web and expo/sqlite on native
-            </Text>
-            <Text className="text-sm">
-              If you change the schema, you need to run{" "}
-              <Text className="text-sm font-mono text-muted-foreground bg-muted">
-                bun db:generate
-              </Text>
-              <Text className="text-sm px-1">then</Text>
-              <Text className="text-sm font-mono text-muted-foreground bg-muted">
-                bun migrate
-              </Text>
-            </Text>
-          </View>
-        )}
-        ItemSeparatorComponent={() => <View className="p-2" />}
-        data={habits}
-        renderItem={renderItem}
-        keyExtractor={(_, index) => `item-${index}`}
-        ListFooterComponent={<View className="py-4" />}
-      />
-      <View className="absolute web:bottom-20 bottom-10 right-8">
-        <Link href="/create" asChild>
-          <Pressable>
-            <View className="bg-primary justify-center rounded-full h-[45px] w-[45px]">
-              <Plus className="text-background self-center" />
-            </View>
-          </Pressable>
-        </Link>
-      </View>
-    </View>
+    <>
+      <DailyQuest />
+    </>
   );
 }

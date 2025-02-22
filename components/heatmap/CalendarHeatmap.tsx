@@ -20,25 +20,27 @@ import {
 } from "./utils/utils";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const rectColor = ["#eefafa", "#3060BF"];
-
-const CalendarHeatmap = (props) => {
-  const {
-    values,
-    gutterSize,
-    numDays,
-    endDate,
-    titleForValue,
-    tooltipDataAttrs,
-    onPress,
-    showOutOfRangeDays,
-    monthLabelsColor,
-    showMonthLabels,
-    showDayLabels,
-    dayLabelsColor,
-    colorArray,
-  } = props;
-
+const rectColor = ["#eefafa", "#40c040"];
+const CalendarHeatmap = ({
+  // Default parameters instead of defaultProps
+  values,
+  numDays = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    0
+  ).getDate(),
+  endDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+  gutterSize = 2,
+  showMonthLabels = true,
+  monthLabelsColor = "white",
+  showDayLabels = true,
+  dayLabelsColor = "white",
+  showOutOfRangeDays = false,
+  colorArray = rectColor,
+  onPress = () => console.log("change onPress prop"),
+  tooltipDataAttrs,
+  titleForValue,
+}: any) => {
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [valueCache, setValueCache] = useState({});
@@ -161,7 +163,7 @@ const CalendarHeatmap = (props) => {
             cy={y}
             r={squareSize / 2 + 1}
             fill="none"
-            stroke="#3060BF"
+            stroke="#40c040"
             strokeWidth="2"
           />
         )}
@@ -232,7 +234,6 @@ const CalendarHeatmap = (props) => {
       )
     );
   };
-
   const scales =
     dimensions.width && dimensions.height ? calculateScales() : null;
 
@@ -241,7 +242,6 @@ const CalendarHeatmap = (props) => {
       <View ref={containerRef} onLayout={handleLayout} style={{ flex: 1 }} />
     );
   }
-
   return (
     <View
       ref={containerRef}
@@ -301,23 +301,6 @@ CalendarHeatmap.propTypes = {
   titleForValue: PropTypes.func,
   onPress: PropTypes.func,
   colorArray: PropTypes.array,
-};
-
-CalendarHeatmap.defaultProps = {
-  numDays: new Date(
-    new Date().getFullYear(),
-    new Date().getMonth() + 1,
-    0
-  ).getDate(),
-  endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
-  gutterSize: 2,
-  showMonthLabels: true,
-  monthLabelsColor: "white",
-  showDayLabels: true,
-  dayLabelsColor: "white",
-  showOutOfRangeDays: false,
-  colorArray: rectColor,
-  onPress: () => console.log("change onPress prop"),
 };
 
 const MonthlyHeatmap = ({ values }) => {
