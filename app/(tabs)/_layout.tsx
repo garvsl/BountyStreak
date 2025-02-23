@@ -17,7 +17,6 @@ export default function TabLayout() {
         },
         tabBarIconStyle: {
           top: 4,
-          marginTop: 2,
         },
         tabBarActiveTintColor: "#38c040",
         tabBarLabelPosition: "below-icon",

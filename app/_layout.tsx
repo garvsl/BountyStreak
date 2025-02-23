@@ -134,21 +134,7 @@ export default function RootLayout() {
           <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
           <GestureHandlerRootView style={{ flex: 1 }}>
             <BottomSheetModalProvider>
-              <SafeAreaView className=""></SafeAreaView>
-
-              {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  options={{
-                    headerShadowVisible: false,
-                  }}
-                  name="habits/archive"
-                />
-                <Stack.Screen
-                  options={{
-                    headerShadowVisible: false,
-                  }}
-                  name="habits/[id]"
-                /> */}
+              <SafeAreaView />
               <Stack
                 screenOptions={{
                   headerShown: false,
