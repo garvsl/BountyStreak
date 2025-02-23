@@ -18,17 +18,19 @@ const ProgressButton = ({ big, small }: any) => {
   );
 };
 
-const Quest = ({ title, amount, max, time = null }: any) => {
+const Quest = ({ title, amount, max, time = null, rank }: any) => {
   const filledCount = Math.round((amount / max) * 6);
   const percentage = Math.round((amount / max) * 100);
 
   return (
-    <View className="bg-[#40c040] flex flex-col justify-between  p-4 w-full gap-8 rounded-2xl">
+    <View className="bg-[#40c040] flex flex-col justify-between p-4 w-full gap-8 rounded-2xl">
       <View className="flex flex-row justify-between items-center">
         <View className="flex flex-row items-center gap-2">
-          {/* <View className="text-white aspect-square p-2  rounded-full bg-gray-700  items-center justify-center border border-white">
-                                  <Text className="text-xs font-light">20%</Text>
-                                </View> */}
+          <View className="text-white aspect-square p-2 rounded-full flex bg-white items-center justify-center border ">
+            <Text className="text-md font-[Kica-PERSONALUSE-Light] font-light">
+              #{rank}
+            </Text>
+          </View>
           <Text className="text-[#eefafa] font-[Kica-PERSONALUSE-Light] font-semibold text-2xl">
             {title}
           </Text>
@@ -68,33 +70,25 @@ export default function Leaderboard() {
     (async () => {
       const res = await getUsersSortedByDoubloons();
 
-      setDefaultItems(
-        res.map((e: any) => {
-          return {
-            id: e.id,
-            title: e.username,
-            amount: e.doubloons,
-          };
-        })
-      );
-      setFilteredItems(
-        res.map((e: any) => {
-          return {
-            id: e.id,
-            title: e.username,
-            amount: e.doubloons,
-          };
-        })
-      );
+      const sortedItems = res
+        .map((e: any) => ({
+          id: e.id,
+          title: e.username,
+          amount: e.doubloons,
+        }))
+        .sort((a, b) => b.amount - a.amount);
+
+      setDefaultItems(sortedItems);
+      setFilteredItems(sortedItems);
       setLoading(false);
     })();
   }, []);
 
   return (
     <ScrollView className="bg-[#070b0f]">
-      <View className="flex  flex-col mt-2 gap-4">
-        <View className="flex px-8 flex-row items-center  gap-3">
-          <Text className="text-3xl text-[#E6F4F4]   font-[Kica-PERSONALUSE-Light]  border-b-2 border-b-[#E6F4F4] ">
+      <View className="flex flex-col mt-2 gap-4">
+        <View className="flex px-8 flex-row items-center gap-3">
+          <Text className="text-3xl text-[#E6F4F4] font-[Kica-PERSONALUSE-Light] border-b-2 border-b-[#E6F4F4]">
             Leaderboard
           </Text>
         </View>
@@ -109,26 +103,31 @@ export default function Leaderboard() {
             <TextInput
               placeholder="Search"
               onChangeText={onSearch}
-              className=" h-12 font-[Kica-PERSONALUSE-Light] text-xs bg-[#171d25] text-[#eefafa]  rounded-2xl px-4 pl-12"
+              className="h-12 font-[Kica-PERSONALUSE-Light] text-xs bg-[#171d25] text-[#eefafa] rounded-2xl px-4 pl-12"
             />
           </View>
 
-          <View className="flex flex-row border border-[#0f1721] bg-[#171d25]  rounded-full">
+          <View className="flex flex-row border border-[#0f1721] bg-[#171d25] rounded-full">
             <Button className="rounded-full bg-[#eefafa]">
               <Feather name="list" size={16} color="#090e13" />
             </Button>
-            <Button className="rounded-full bg-[transparent] ">
+            <Button className="rounded-full bg-[transparent]">
               <Feather name="grid" size={16} color="#eefafa" />
             </Button>
           </View>
         </View>
 
-        <View className=" px-6 flex flex-col gap-4">
+        <View className="px-6 flex flex-col gap-4">
           {filteredItems.length === 0 ? (
-            <Quest title={"Theres Nothing..."} amount={0} max={0} />
+            <Quest title={"There's Nothing..."} amount={0} max={0} />
           ) : (
-            filteredItems.map((e) => (
-              <Quest key={e.id} title={e.title} amount={e.amount} />
+            filteredItems.map((e, index) => (
+              <Quest
+                key={e.id}
+                title={e.title}
+                amount={e.amount}
+                rank={index + 1}
+              />
             ))
           )}
           <View className="bg-transparent w-full h-16 rounded-2xl"></View>
