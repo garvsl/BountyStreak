@@ -65,15 +65,34 @@ const Quest = ({ title, amount, max, time = null }: any) => {
     </View>
   );
 };
+
 const { width: screenWidth } = Dimensions.get("window");
-const PADDING = 48; // 24px padding on each side
-const CANVAS_SIZE = screenWidth - PADDING; // Square canvas
+const PADDING = 48;
+const CANVAS_SIZE = screenWidth - PADDING;
 
 export default function Pirate() {
   const counter = useSharedValue(0);
   const xPosition = useSharedValue(CANVAS_SIZE / 2);
   const yPosition = useSharedValue(CANVAS_SIZE / 2);
 
+  const backgroundImage = useImage(
+    require("../../assets/sprite/CatRoomFree/Room1.png")
+  );
+  const spriteMap = useImage(
+    require("../../assets/sprite/FreePiratePack/PirateCats/PirateCat2.png")
+  );
+  const bedImage = useImage(require("../../assets/sprite/Furniture/bed.png"));
+  const plantImage = useImage(
+    require("../../assets/sprite/Furniture/plant.png")
+  );
+  const foodImage = useImage(require("../../assets/sprite/Furniture/food.png"));
+  const catTowerImage = useImage(
+    require("../../assets/sprite/Furniture/tower.png")
+  );
+  const yarnImage = useImage(require("../../assets/sprite/Furniture/yarn.png"));
+  const windowImage = useImage(
+    require("../../assets/sprite/Furniture/window.png")
+  );
   useEffect(() => {
     const interval = setInterval(() => {
       counter.value = (counter.value + 1) % 2;
@@ -82,13 +101,6 @@ export default function Pirate() {
     return () => clearInterval(interval);
   }, []);
 
-  const spriteMap = useImage(
-    require("../../assets/sprite/FreePiratePack/PirateCats/PirateCat2.png")
-  );
-
-  const backgroundImage = useImage(
-    require("../../assets/sprite/CatRoomFree/Room1.png")
-  );
   const sprites = useRectBuffer(1, (rect, i) => {
     "worklet";
     let frameSelect;
@@ -105,6 +117,51 @@ export default function Pirate() {
     const scale = 1.7;
     transform.set(scale, 0, xPosition.value, yPosition.value);
   });
+
+  const furniture = [
+    {
+      image: bedImage,
+      x: CANVAS_SIZE * 0.4,
+      y: CANVAS_SIZE * 0.35,
+      width: CANVAS_SIZE * 0.2,
+      height: CANVAS_SIZE * 0.2,
+    },
+    {
+      image: plantImage,
+      x: CANVAS_SIZE * 0.48,
+      y: CANVAS_SIZE * 0.75,
+      width: CANVAS_SIZE * 0.05,
+      height: CANVAS_SIZE * 0.15,
+    },
+    {
+      image: foodImage,
+      x: CANVAS_SIZE * 0.1,
+      y: CANVAS_SIZE * 0.47,
+      width: CANVAS_SIZE * 0.1,
+      height: CANVAS_SIZE * 0.3,
+    },
+    {
+      image: catTowerImage,
+      x: CANVAS_SIZE * 0.7,
+      y: CANVAS_SIZE * 0.4,
+      width: CANVAS_SIZE * 0.15,
+      height: CANVAS_SIZE * 0.25,
+    },
+    {
+      image: yarnImage,
+      x: CANVAS_SIZE * 0.35,
+      y: CANVAS_SIZE * 0.38,
+      width: CANVAS_SIZE * 0.055,
+      height: CANVAS_SIZE * 0.25,
+    },
+    {
+      image: windowImage,
+      x: CANVAS_SIZE * 0.2,
+      y: CANVAS_SIZE * 0.25,
+      width: CANVAS_SIZE * 0.12,
+      height: CANVAS_SIZE * 0.25,
+    },
+  ];
 
   return (
     <View className="flex-1 bg-[#070b0f] px-6">
@@ -138,6 +195,20 @@ export default function Pirate() {
               />
             )}
 
+            {furniture.map(
+              (item, index) =>
+                item.image && (
+                  <Image
+                    key={index}
+                    image={item.image}
+                    x={item.x}
+                    y={item.y}
+                    width={item.width}
+                    height={item.height}
+                  />
+                )
+            )}
+
             {spriteMap && (
               <Atlas
                 image={spriteMap}
@@ -152,7 +223,11 @@ export default function Pirate() {
       <View className="flex flex-col gap-3">
         <View className="flex  flex-row items-center  ">
           <Text className="text-3xl text-[#E6F4F4]   font-[Kica-PERSONALUSE-Light]  border-b-[#E6F4F4] ">
-            SHOP
+            SHOP -
+          </Text>
+          <Text className="text-xl text-[#E6F4F4]   font-[Kica-PERSONALUSE-Light]  border-b-[#E6F4F4] ">
+            {" "}
+            CURRENT POINTS: 0
           </Text>
         </View>
         <ScrollView className="">
