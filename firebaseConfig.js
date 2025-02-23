@@ -40,6 +40,8 @@ const auth = getAuth(app);
 const db = getFirestore();
 const userRefs = collection(db, "User");
 
+// CREATED BY IRVIN AND TAS
+
 export async function getAllUsers() {
   try {
     const usersRef = collection(db, "User");
