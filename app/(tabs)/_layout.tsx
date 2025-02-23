@@ -1,13 +1,23 @@
-import { Tabs } from "expo-router";
-import React from "react";
+import { Tabs, useRouter } from "expo-router";
+import React, { useEffect } from "react";
 import { View } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { useUser } from "@/hooks/useUser";
 
 export const unstable_settings = {
   initialRouteName: "index",
 };
 
 export default function TabLayout() {
+  const { user } = useUser();
+  const router = useRouter();
+  useEffect(() => {
+    console.log(user);
+    if (!user || user == null) {
+      router.replace("index");
+    }
+  }, [user]);
+  // current user
   return (
     <Tabs
       screenOptions={{
