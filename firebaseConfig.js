@@ -177,11 +177,9 @@ export async function listPetItems(userId) {
 
       // List the items the pet has
       if (petPirateItems.length > 0) {
-        console.log(
-          `Pet has the following items: ${petPirateItems.join(", ")}`
-        );
+        return petPirateItems;
       } else {
-        console.log(`Pet has no items.`);
+        return null;
       }
     } else {
       console.log(`User with ID: ${userId} not found!`);
