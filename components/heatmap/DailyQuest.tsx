@@ -134,18 +134,13 @@ export default function DailyQuest() {
                 <MaterialCommunityIcons color="#f75a37" name="fire" size={18} />
               </Text>
               <Text className="font-bold text-[#070b0f] font-[Kica-PERSONALUSE-Light]">
-                0 Day Streak
+                1 Day Streak
               </Text>
             </View>
           </View>
           <View className="px-6">
             <View className="bg-[#171d25] blur-md flex-1 flex-row p-2 py-4 h-[22rem] rounded-2xl">
-              <MonthlyHeatmap
-                values={[
-                  { date: "2025-02-02", value: 1 },
-                  { date: "2025-02-13", value: 2 },
-                ]}
-              />
+              <MonthlyHeatmap values={[{ date: "2025-02-23", value: 1 }]} />
             </View>
           </View>
         </View>

@@ -60,6 +60,7 @@
     "expo-status-bar": "~2.0.1",
     "expo-system-ui": "~4.0.7",
     "expo-web-browser": "~14.0.2",
+    "firebase": "^11.3.1",
     "gh-pages": "^6.3.0",
     "lucide-react-native": "^0.314.0",
     "nativewind": "4.1.6",
