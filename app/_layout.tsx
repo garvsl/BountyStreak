@@ -1,7 +1,9 @@
 import "./global.css";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { type Theme, ThemeProvider } from "@react-navigation/native";
-import { SplashScreen, Stack } from "expo-router";
+import { type Theme } from "@react-navigation/native";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -11,24 +13,13 @@ import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { getItem, setItem } from "@/lib/storage";
-import {
-  ImageBackground,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  TextInput,
-  View,
-} from "react-native";
-import { Text } from "@/components/ui/text";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import { Button } from "@/components/ui/button";
-import Feather from "@expo/vector-icons/Feather";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import MonthlyHeatmap from "@/components/heatmap/CalendarHeatmap";
+import { Platform, SafeAreaView, View } from "react-native";
 import { UserProvider } from "@/hooks/useUser";
 
-const NAV_FONT_FAMILY = "Inter";
+SplashScreen.preventAutoHideAsync();
+
+const NAV_FONT_FAMILY = "Kica-PERSONALUSE-Light";
+
 const LIGHT_THEME: Theme = {
   dark: false,
   colors: NAV_THEME.light,
@@ -51,104 +42,83 @@ const LIGHT_THEME: Theme = {
     },
   },
 };
+
 const DARK_THEME: Theme = {
   dark: true,
   colors: NAV_THEME.dark,
-  fonts: {
-    regular: {
-      fontFamily: NAV_FONT_FAMILY,
-      fontWeight: "400",
-    },
-    medium: {
-      fontFamily: NAV_FONT_FAMILY,
-      fontWeight: "500",
-    },
-    bold: {
-      fontFamily: NAV_FONT_FAMILY,
-      fontWeight: "700",
-    },
-    heavy: {
-      fontFamily: NAV_FONT_FAMILY,
-      fontWeight: "800",
-    },
-  },
+  fonts: LIGHT_THEME.fonts,
 };
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from "expo-router";
+export { ErrorBoundary } from "expo-router";
 
 export const unstable_settings = {
   initialRouteName: "index",
 };
 
-// Prevent the splash screen from auto-hiding before getting the color scheme.
-SplashScreen.preventAutoHideAsync();
-
 export default function RootLayout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
 
+  const [fontsLoaded, fontError] = useFonts({
+    "Kica-PERSONALUSE-Light": require("@/assets/fonts/Kica-PERSONALUSE-Light.ttf"),
+  });
+
   React.useEffect(() => {
-    (async () => {
-      const theme = getItem("theme");
-      if (Platform.OS === "web") {
-        // Adds the background color to the html element to prevent white background on overscroll.
-        document.documentElement.classList.add("bg-[rgba(0,0,0,0.0)] ");
-      }
-      if (!theme) {
-        setAndroidNavigationBar(colorScheme);
-        setItem("theme", colorScheme);
-        setIsColorSchemeLoaded(true);
-        return;
-      }
-      const colorTheme = theme === "dark" ? "dark" : "light";
-      setAndroidNavigationBar(colorTheme);
-      if (colorTheme !== colorScheme) {
-        setColorScheme(colorTheme);
+    async function prepare() {
+      try {
+        const theme = getItem("theme");
+        if (Platform.OS === "web") {
+          document.documentElement.classList.add("bg-[rgba(0,0,0,0.0)]");
+        }
+
+        if (!theme) {
+          setAndroidNavigationBar(colorScheme);
+          setItem("theme", colorScheme);
+        } else {
+          const colorTheme = theme === "dark" ? "dark" : "light";
+          setAndroidNavigationBar(colorTheme);
+          if (colorTheme !== colorScheme) {
+            setColorScheme(colorTheme);
+          }
+        }
 
         setIsColorSchemeLoaded(true);
-        return;
+      } catch (e) {
+        console.warn(e);
       }
-      setIsColorSchemeLoaded(true);
-    })().finally(() => {
-      SplashScreen.hideAsync();
-    });
+    }
+
+    prepare();
   }, []);
 
-  if (!isColorSchemeLoaded) {
+  React.useEffect(() => {
+    if ((fontsLoaded && isColorSchemeLoaded) || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, isColorSchemeLoaded, fontError]);
+
+  if ((!fontsLoaded && !fontError) || !isColorSchemeLoaded) {
     return null;
   }
 
-  const glow = {
-    textShadowColor: "#3060BF",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
-  };
-
   return (
-    <>
-      <View className="bg-[#070b0f] flex-1  z-[9999]">
-        <DatabaseProvider>
-          <UserProvider>
-            {/* <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}> */}
-            <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <BottomSheetModalProvider>
-                <SafeAreaView />
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                  }}
-                />
-              </BottomSheetModalProvider>
-            </GestureHandlerRootView>
-            {/* </ThemeProvider> */}
-          </UserProvider>
-        </DatabaseProvider>
-        <PortalHost />
-      </View>
-    </>
+    <View className="bg-[#070b0f] flex-1 z-[9999]">
+      <DatabaseProvider>
+        <UserProvider>
+          <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <BottomSheetModalProvider>
+              <SafeAreaView />
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                }}
+              />
+            </BottomSheetModalProvider>
+          </GestureHandlerRootView>
+          <PortalHost />
+        </UserProvider>
+      </DatabaseProvider>
+    </View>
   );
 }
