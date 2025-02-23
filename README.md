@@ -31,7 +31,7 @@ Learned how to effectively use Google Generative AI in a React Native app, imple
 In the future we plan to expand this app further by partnering with environment-focused charities around the world and implement quests where upon completion instead of granting doubloons, Bounty Streak will donate to a (partnered) charity of the user's choice on their behalf. Additionally, we want to expand the user base of this app and potentially partner with schools as well to teach positive recycling habits from a young age because of our built-in gamification elements.
 
 ## Contributions
-Garv Sehgal - Frontend
-Alex Snit - Frontend
-Tasnim Ferdous - Backend
-Irvin Lin - Backend
+- Garv Sehgal - Frontend
+- Alex Snit - Frontend
+- Tasnim Ferdous - Backend
+- Irvin Lin - Backend
