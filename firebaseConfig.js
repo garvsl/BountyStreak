@@ -228,9 +228,15 @@ export async function getSpecificUsersQuestData(uid) {
     const collectionRef = collection(db, "User", uid, "usersQuest");
     const collectionSnapshot = await getDocs(collectionRef);
 
-    return collectionSnapshot;
+    const quests = collectionSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return quests;
   } catch (error) {
     console.log("Error: ", error);
+    return [];
   }
 }
 
@@ -431,6 +437,13 @@ export async function createUserIfNotExists(username) {
           maxProgress: 6,
           completed: false,
           rewardInDoubloons: 30,
+        },
+        {
+          questName: "Recycle Bottles",
+          currentProgress: 0,
+          maxProgress: 50,
+          completed: false,
+          rewardInDoubloons: 500,
         },
       ];
 

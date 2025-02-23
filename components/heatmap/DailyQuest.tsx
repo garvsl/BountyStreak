@@ -4,11 +4,20 @@ import { Button } from "@/components/ui/button";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MonthlyHeatmap from "@/components/heatmap/CalendarHeatmap";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useUser } from "@/hooks/useUser";
+import { getSpecificUsersQuestData } from "@/firebaseConfig";
 
-const Quest = ({ title, amount, max, time = null }: any) => {
-  const filledCount = Math.round((amount / max) * 6);
-  const percentage = Math.round((amount / max) * 100);
+const Quest = ({
+  questName,
+  currentProgress,
+  maxProgress,
+  rewardInDoubloons,
+  completed,
+  time = null,
+}: any) => {
+  const filledCount = Math.round((currentProgress / maxProgress) * 6);
+  const percentage = Math.round((currentProgress / maxProgress) * 100);
 
   return (
     <View className="bg-[#40c040] flex flex-col justify-between  p-4 w-full gap-8 rounded-2xl">
@@ -18,24 +27,24 @@ const Quest = ({ title, amount, max, time = null }: any) => {
                                 <Text className="text-xs font-light">20%</Text>
                               </View> */}
           <Text className="text-[#eefafa] font-[Kica-PERSONALUSE-Light] font-semibold text-2xl">
-            {title}
+            {questName}
           </Text>
         </View>
-        <Pressable className="border p-1 rounded-full border-[#C9E7F2] ">
+        {/* <Pressable className="border p-1 rounded-full border-[#C9E7F2] ">
           <AntDesign name="check" size={18} color="#E7F5FA" />
-        </Pressable>
+        </Pressable> */}
       </View>
       <View className="flex flex-col gap-1">
         <View className="flex flex-row items-end justify-between ">
           <Text className="font-normal text-[#eefafa] font-[Kica-PERSONALUSE-Light]">
-            {amount}
+            {currentProgress}
             {""}
             <Text className="text-gray-800 font-light ">
-              /{max} {time != null && time}
+              /{maxProgress} {time != null && time}
             </Text>
           </Text>
           <Text className="font-[Kica-PERSONALUSE-Light] text-[#eefafa] text-2xl">
-            {percentage}%
+            {rewardInDoubloons} Doubloons
           </Text>
         </View>
         <View className="h-2 flex rounded-full bg-[#171d25]  flex-row">
@@ -60,9 +69,11 @@ const Quest = ({ title, amount, max, time = null }: any) => {
   );
 };
 
-const ProgressButton = ({ big, small }: any) => {
+const ProgressButton = ({ big, small, classN = "" }: any) => {
   return (
-    <Pressable className="flex-[1] bg-[#eefafa] rounded-2xl flex flex-col justify-center items-center">
+    <Pressable
+      className={`flex-[1] bg-[#eefafa] rounded-2xl flex flex-col justify-center items-center ${classN} `}
+    >
       <Text className="font-bold text-[#070b0f] font-[Kica-PERSONALUSE-Light]">
         {big}
       </Text>
@@ -80,39 +91,31 @@ export default function DailyQuest() {
     textShadowRadius: 8,
   };
 
-  const [defaultItems, setDefaultItems] = useState([
-    {
-      id: 123,
-      title: "Recycle Plastic",
-      amount: 1,
-      max: 2,
-    },
-    {
-      id: 223,
-      title: "Recycle Glass",
-      amount: 0,
-      max: 2,
-    },
-    {
-      id: 332,
-      title: "Recycle Cardboard",
-      amount: 0,
-      max: 5,
-    },
-  ]);
+  const [defaultItems, setDefaultItems] = useState<any>([]);
 
-  const [filteredItems, setFilteredItems] = useState(defaultItems);
+  const [filteredItems, setFilteredItems] = useState<any>([]);
 
   const onSearch = (searchText) => {
     if (searchText) {
       const searchResults = defaultItems.filter((item) =>
-        item.title.toLowerCase().includes(searchText.toLowerCase())
+        item.questName.toLowerCase().includes(searchText.toLowerCase())
       );
       setFilteredItems(searchResults);
     } else {
       setFilteredItems(defaultItems);
     }
   };
+
+  const { user } = useUser();
+
+  useEffect(() => {
+    (async () => {
+      const res = await getSpecificUsersQuestData(user.uid);
+      console.log(res);
+      setDefaultItems(res);
+      setFilteredItems(res);
+    })();
+  }, [user]);
 
   return (
     <ScrollView className="bg-[#070b0f]">
@@ -177,22 +180,19 @@ export default function DailyQuest() {
             </View>
           </View>
           <View className="px-6 flex gap-3 h-16 flex-row">
-            <ProgressButton big={"0"} small={"Dabaloons"} />
-            <ProgressButton big={"3"} small={"Completed"} />
+            <ProgressButton
+              classN={"flex-[2]"}
+              big={user ? user.doubloons : 0}
+              small={"Doubloons"}
+            />
+            {/* <ProgressButton big={"3"} small={"Completed"} /> */}
             <ProgressButton big={"23:54:12"} small={"Remaining"} />
           </View>
           <View className=" px-6 flex flex-col gap-4">
             {filteredItems.length === 0 ? (
               <Quest title={"Theres Nothing..."} amount={0} max={0} />
             ) : (
-              filteredItems.map((e) => (
-                <Quest
-                  key={e.id}
-                  title={e.title}
-                  amount={e.amount}
-                  max={e.max}
-                />
-              ))
+              filteredItems.map((e: any) => <Quest key={e.id} {...e} />)
             )}
 
             <View className="bg-transparent w-full h-16 rounded-2xl"></View>
