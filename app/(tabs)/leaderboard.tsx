@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import { getUsersSortedByDoubloons } from "firebaseConfig";
+import { useUser } from "@/hooks/useUser";
 
 const ProgressButton = ({ big, small }: any) => {
   return (
@@ -42,7 +43,7 @@ const Quest = ({ title, amount, max, time = null, rank }: any) => {
       <View className="flex flex-col gap-1">
         <View className="flex flex-row items-end justify-between ">
           <Text className="font-[Kica-PERSONALUSE-Light] text-[#eefafa] text-2xl">
-            {amount} Dabaloons
+            {amount} Doubloons
           </Text>
         </View>
       </View>
@@ -54,7 +55,7 @@ export default function Leaderboard() {
   const [defaultItems, setDefaultItems] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [filteredItems, setFilteredItems] = useState(defaultItems);
-
+  const { user } = useUser();
   const onSearch = (searchText) => {
     if (searchText) {
       const searchResults = defaultItems.filter((item) =>
@@ -82,7 +83,7 @@ export default function Leaderboard() {
       setFilteredItems(sortedItems);
       setLoading(false);
     })();
-  }, []);
+  }, [user]);
 
   return (
     <ScrollView className="bg-[#070b0f]">
