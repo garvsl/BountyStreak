@@ -58,13 +58,31 @@ const Quest = ({ title, amount, max, time = null }: any) => {
 
 export default function Pirate() {
   return (
-    <View className="flex-1  bg-[#070b0f] p-0">
-      <View className="py-3 px-6">
-        <View className="h-[32rem] rounded-2xl bg-white "></View>
+    <View className="flex-1  bg-[#070b0f] px-6">
+      <Text className="text-3xl text-[#E6F4F4]   font-[Kica-PERSONALUSE-Light]  border-b-[#E6F4F4] ">
+        PIRATE
+      </Text>
+      <View className="py-3 pb-4">
+        <View className="h-[28rem] rounded-2xl bg-white "></View>
       </View>
-      <ScrollView className="px-6">
-        <Quest title={"Buy hat"} amount={10} max={500} />
-      </ScrollView>
+      <View className="flex flex-col gap-3">
+        <View className="flex  flex-row items-center  ">
+          <Text className="text-3xl text-[#E6F4F4]   font-[Kica-PERSONALUSE-Light]  border-b-[#E6F4F4] ">
+            SHOP
+          </Text>
+        </View>
+        <ScrollView className="">
+          <View className="flex flex-col gap-4">
+            <Quest title={"Buy hat"} amount={10} max={500} />
+            <Quest title={"Grow Stronger"} amount={10} max={500} />
+            <Quest title={"Sword"} amount={10} max={500} />
+            <View className="bg-transparent w-full h-36 rounded-2xl"></View>
+            <View className="bg-transparent w-full h-36 rounded-2xl"></View>
+            <View className="bg-transparent w-full h-36 rounded-2xl"></View>
+            <View className="bg-transparent w-full h-36 rounded-2xl"></View>
+          </View>
+        </ScrollView>
+      </View>
     </View>
   );
 }
