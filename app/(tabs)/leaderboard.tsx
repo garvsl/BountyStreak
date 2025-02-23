@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
+import { getUsersSortedByDoubloons } from "firebaseConfig";
 
 const ProgressButton = ({ big, small }: any) => {
   return (
@@ -48,24 +49,8 @@ const Quest = ({ title, amount, max, time = null }: any) => {
 };
 
 export default function Leaderboard() {
-  const [defaultItems, setDefaultItems] = useState([
-    {
-      id: 123,
-      title: "Garv",
-      amount: 1,
-    },
-    {
-      id: 223,
-      title: "Irvin",
-      amount: -1,
-    },
-    {
-      id: 332,
-      title: "Alex",
-      amount: 0,
-    },
-  ]);
-
+  const [defaultItems, setDefaultItems] = useState<any>([]);
+  const [loading, setLoading] = useState(true);
   const [filteredItems, setFilteredItems] = useState(defaultItems);
 
   const onSearch = (searchText) => {
@@ -78,6 +63,28 @@ export default function Leaderboard() {
       setFilteredItems(defaultItems);
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      const res = await getUsersSortedByDoubloons();
+
+      setDefaultItems(
+        res.map((e: any) => {
+          return {
+            id: e.id,
+            title: e.username,
+            amount: e.doubloons,
+          };
+        })
+      );
+      setFilteredItems(defaultItems);
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) {
+    return <Quest title={"Loading..."} amount={0} max={0} />;
+  }
 
   return (
     <ScrollView className="bg-[#070b0f]">
@@ -111,11 +118,6 @@ export default function Leaderboard() {
             </Button>
           </View>
         </View>
-        {/* <View className="px-6 flex gap-3 h-16 flex-row">
-          <ProgressButton big={"3"} small={"Completed"} />
-          <ProgressButton big={"1"} small={"In Progress"} />
-          <ProgressButton big={"23:54:12"} small={"Remaining"} />
-        </View> */}
 
         <View className=" px-6 flex flex-col gap-4">
           {filteredItems.length === 0 ? (
