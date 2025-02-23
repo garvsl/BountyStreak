@@ -9,6 +9,47 @@ import {
   Image,
 } from "react-native";
 import { useRef, useState } from "react";
+import {
+  incrementQuestProgressForSpecificUser,
+  markQuestCompleteAndUpdateUsersPoints,
+} from "@/firebaseConfig";
+import { useUser } from "@/hooks/useUser";
+
+// Quest mapping for material types
+interface Quest {
+  id: string;
+  questName: string;
+  currentProgress: number;
+  maxProgress: number;
+  completed: boolean;
+  rewardInDoubloons: number;
+}
+
+const MATERIAL_TO_QUEST = {
+  Plastic: "Recycle Plastic",
+  Glass: "Recycle Glass",
+  Cardboard: "Recycle Cardboard",
+  Bottle: "Recycle Bottles",
+} as const;
+
+type MaterialType = keyof typeof MATERIAL_TO_QUEST | "None";
+
+const VISION_PROMPT = `
+Analyze this image and categorize the main recyclable item shown. 
+Choose EXACTLY ONE of these categories: 'Glass', 'Plastic', 'Cardboard', 'Bottle', 'None'.
+Requirements:
+- Select 'None' if no clear recyclable item is visible
+- Choose the most specific category that applies
+- For bottles, categorize as:
+  * 'Glass' if it's clearly a glass bottle
+  * 'Plastic' if it's clearly a plastic bottle
+  * 'Bottle' if the material is unclear
+- Look for distinctive features:
+  * Glass: transparent, rigid, typically has a distinctive shine
+  * Plastic: flexible, matte or slight sheen, visible seams
+  * Cardboard: brown/beige color, visible fiber texture, folds/creases
+Return ONLY the category name, nothing else.
+`;
 
 export default function Vision() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -19,14 +60,44 @@ export default function Vision() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
-
-  const { width } = useWindowDimensions();
+  const { user, setQuests, localQuests, setLocalQuests } = useUser();
 
   if (!permission?.granted) requestPermission();
 
   const resetCamera = () => {
     setCapturedImage(null);
     setAnalysisResult(null);
+  };
+
+  const handleQuestProgress = async (material: MaterialType) => {
+    if (material === "None") return;
+
+    const questName = MATERIAL_TO_QUEST[material];
+    const questToUpdate = localQuests.find((q) => q.questName === questName);
+
+    if (!questToUpdate || questToUpdate.completed) return;
+
+    try {
+      await incrementQuestProgressForSpecificUser(user.uid, questName);
+
+      const updatedQuests = localQuests.map((quest) => {
+        if (quest.questName === questName) {
+          const newProgress = quest.currentProgress + 1;
+          return {
+            ...quest,
+            currentProgress: newProgress,
+            completed: newProgress >= quest.maxProgress,
+          };
+        }
+        return quest;
+      });
+
+      setLocalQuests(updatedQuests);
+
+      setQuests((prev) => prev + 1);
+    } catch (error) {
+      console.error("Error updating quest progress:", error);
+    }
   };
 
   const captureImageAsync = async () => {
@@ -43,10 +114,8 @@ export default function Vision() {
       setCapturedImage(`data:image/jpeg;base64,${imageData.base64}`);
       setIsAnalyzing(true);
 
-      const prompt =
-        "This image contains either 'Glass', 'Plastic', 'Cardboard', or 'None'. Please identify the primary subject of the image into one of the previously specified categories. If you can recognize mark it as None.";
       const generatedResponse = await model.generateContent([
-        prompt,
+        VISION_PROMPT,
         {
           inlineData: {
             mimeType: "image/jpeg",
@@ -55,7 +124,10 @@ export default function Vision() {
         },
       ]);
 
-      setAnalysisResult(generatedResponse.response.text());
+      const result = generatedResponse.response.text().trim() as MaterialType;
+      setAnalysisResult(result);
+
+      await handleQuestProgress(result);
       setIsAnalyzing(false);
     } catch (error) {
       console.error("Error capturing or processing image:", error);
