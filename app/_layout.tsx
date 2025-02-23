@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MonthlyHeatmap from "@/components/heatmap/CalendarHeatmap";
+import { UserProvider } from "@/hooks/useUser";
 
 const NAV_FONT_FAMILY = "Inter";
 const LIGHT_THEME: Theme = {
@@ -130,19 +131,21 @@ export default function RootLayout() {
     <>
       <View className="bg-[#070b0f] flex-1  z-[9999]">
         <DatabaseProvider>
-          {/* <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}> */}
-          <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetModalProvider>
-              <SafeAreaView />
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                }}
-              />
-            </BottomSheetModalProvider>
-          </GestureHandlerRootView>
-          {/* </ThemeProvider> */}
+          <UserProvider>
+            {/* <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}> */}
+            <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <BottomSheetModalProvider>
+                <SafeAreaView />
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                />
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
+            {/* </ThemeProvider> */}
+          </UserProvider>
         </DatabaseProvider>
         <PortalHost />
       </View>
