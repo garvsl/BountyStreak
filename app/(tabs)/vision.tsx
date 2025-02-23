@@ -1,32 +1,50 @@
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { StyleSheet, Text, View, TouchableOpacity, useWindowDimensions } from 'react-native';
-import { useRef } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  useWindowDimensions,
+  Image,
+} from "react-native";
+import { useRef, useState } from "react";
 
 export default function Vision() {
   const [permission, requestPermission] = useCameraPermissions();
   const camera = useRef<CameraView>(null);
-
   const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-  // Getting width and height of the screen
-  const { width } = useWindowDimensions();
-  const height = Math.round((width * 16) / 9);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
-  // Requesting permission to use the camera
+  const { width } = useWindowDimensions();
+
   if (!permission?.granted) requestPermission();
 
-  // Capturing image
+  const resetCamera = () => {
+    setCapturedImage(null);
+    setAnalysisResult(null);
+  };
+
   const captureImageAsync = async () => {
     if (!camera.current) return;
     try {
       const imageData = await camera.current.takePictureAsync({
-        quality: 0.8, // Reduced quality
+        quality: 0.8,
         base64: true,
       });
-      if (!imageData || !imageData.base64) throw new Error("No image data captured");
-      const prompt = "This image contains either 'Glass', 'Plastic', 'Cardboard', or 'None'. Please identify the primary subject of the image into one of the previously specified categories.";
+
+      if (!imageData || !imageData.base64)
+        throw new Error("No image data captured");
+
+      setCapturedImage(`data:image/jpeg;base64,${imageData.base64}`);
+      setIsAnalyzing(true);
+
+      const prompt =
+        "This image contains either 'Glass', 'Plastic', 'Cardboard', or 'None'. Please identify the primary subject of the image into one of the previously specified categories. If you can recognize mark it as None.";
       const generatedResponse = await model.generateContent([
         prompt,
         {
@@ -37,28 +55,57 @@ export default function Vision() {
         },
       ]);
 
-      console.log("Result:", generatedResponse.response.text())
+      setAnalysisResult(generatedResponse.response.text());
+      setIsAnalyzing(false);
     } catch (error) {
-      console.error('Error capturing or processing image:', error);
+      console.error("Error capturing or processing image:", error);
+      setIsAnalyzing(false);
+      setAnalysisResult("Error analyzing image");
     }
   };
 
   return (
     <View style={styles.main}>
       {permission ? (
-        <CameraView
-          ratio="16:9"
-          style={{ ...styles.camera, height: height, width: '100%' }}
-          ref={camera}
-          onCameraReady={() => {if(!permission) requestPermission()}}
-        >
-          <View style={styles.bottomCamera}>
-            <TouchableOpacity
-              style={styles.shutterButton}
-              onPress={captureImageAsync}
-            />
-          </View>
-        </CameraView>
+        <>
+          {capturedImage ? (
+            <View style={styles.previewContainer}>
+              <Image
+                source={{ uri: capturedImage }}
+                style={{ height: "78%", width: "100%" }}
+              />
+              <View style={styles.resultContainer}>
+                {isAnalyzing ? (
+                  <Text style={styles.loadingText}>Analyzing image...</Text>
+                ) : (
+                  <Text style={styles.resultText}>{analysisResult}</Text>
+                )}
+                <TouchableOpacity
+                  style={styles.newPhotoButton}
+                  onPress={resetCamera}
+                >
+                  <Text style={styles.buttonText}>Take New Photo</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <CameraView
+              ratio="16:9"
+              style={{ ...styles.camera, height: "100%", width: "100%" }}
+              ref={camera}
+              onCameraReady={() => {
+                if (!permission) requestPermission();
+              }}
+            >
+              <View style={styles.bottomCamera}>
+                <TouchableOpacity
+                  style={styles.shutterButton}
+                  onPress={captureImageAsync}
+                />
+              </View>
+            </CameraView>
+          )}
+        </>
       ) : (
         <View>
           <Text>Please provide camera permission.</Text>
@@ -71,40 +118,61 @@ export default function Vision() {
 const styles = StyleSheet.create({
   main: {
     flex: 1,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#000',
+    alignSelf: "stretch",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#000",
   },
   camera: {
-    alignSelf: 'stretch',
-    flexDirection: 'column',
+    alignSelf: "stretch",
+    flexDirection: "column",
   },
   bottomCamera: {
     flex: 1,
-    alignSelf: 'stretch',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignSelf: "stretch",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    flexDirection: "row",
     columnGap: 30,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
-  button: {
-    width: 50,
-    height: 50,
-    margin: 15,
-    borderRadius: 50,
-    backgroundColor: '#EDF1D6',
-    alignItems: 'center',
-    justifyContent: 'center',
+  previewContainer: {
+    flex: 1,
+    width: "100%",
+  },
+  resultContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "#FFF",
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  resultText: {
+    color: "#FFF",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  newPhotoButton: {
+    backgroundColor: "#EDF1D6",
+    padding: 15,
+    borderRadius: 25,
+    width: 200,
+    alignItems: "center",
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
   shutterButton: {
     width: 70,
     height: 70,
-    bottom: 15,
+    bottom: 45,
     borderRadius: 50,
-    backgroundColor: '#FFF',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FFF",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
