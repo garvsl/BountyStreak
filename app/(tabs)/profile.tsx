@@ -19,13 +19,13 @@ export default function Profile() {
     }
   };
   return (
-    <ScrollView className="flex-1 w-full px-6 bg-background pt-4 gap-y-6">
+    <ScrollView className="flex-1 bg-[#070b0f] w-full px-6  pt-4 gap-y-6">
       <List>
-        <ListHeader>
+        {/* <ListHeader>
           <Muted>App</Muted>
-        </ListHeader>
-        <ThemeSettingItem />
-        {Platform.OS !== "web" && <NotificationItem />}
+        </ListHeader> */}
+        {/* <ThemeSettingItem />
+        {Platform.OS !== "web" && <NotificationItem />} */}
         <ListHeader className="pt-8">
           <Muted>GENERAL</Muted>
         </ListHeader>
