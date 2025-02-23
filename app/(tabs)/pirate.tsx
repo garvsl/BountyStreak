@@ -13,7 +13,7 @@ import { useUser } from "@/hooks/useUser";
 import { buyPetItem, listPetItems } from "@/firebaseConfig";
 
 const Quest = ({ title, amount, max, onDelete, time = null }) => {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const filledCount = Math.round((amount / max) * 6);
   const percentage = Math.round((amount / max) * 100);
 
@@ -26,7 +26,10 @@ const Quest = ({ title, amount, max, onDelete, time = null }) => {
 
         console.log("Purchase successful, calling onDelete");
         onDelete(title); // Pass the title to identify which item was purchased
-        user.doubloons -= max;
+        setUser((prevUser: any) => ({
+          ...prevUser,
+          doubloons: prevUser.doubloons - max,
+        }));
       } catch (error) {
         console.error("Error during purchase:", error);
       }
@@ -279,7 +282,7 @@ export default function Pirate() {
     <View className="flex-1 bg-[#070b0f]">
       <View className="px-6">
         <Text className="text-3xl text-[#E6F4F4] font-[Kica-PERSONALUSE-Light] border-b-[#E6F4F4]">
-          PIRATE
+          YOUR PIRATE
         </Text>
         <View className="py-3 pb-4">
           <View
