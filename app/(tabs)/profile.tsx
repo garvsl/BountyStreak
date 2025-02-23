@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Linking, Platform } from "react-native";
+import { Linking, Platform, Text } from "react-native";
 import List, { ListHeader } from "@/components/ui/list";
 import ListItem from "@/components/ui/list-item";
 import { Muted } from "@/components/ui/typography";
@@ -9,6 +9,8 @@ import * as WebBrowser from "expo-web-browser";
 
 import { ThemeSettingItem } from "@/components/settings/ThemeItem";
 import { NotificationItem } from "@/components/settings/NotificationItem";
+import { useUser } from "@/hooks/useUser";
+import { ArrowBigLeftIcon } from "lucide-react-native";
 
 export default function Profile() {
   const openExternalURL = (url: string) => {
@@ -18,6 +20,9 @@ export default function Profile() {
       WebBrowser.openBrowserAsync(url);
     }
   };
+
+  const { user, setUser } = useUser();
+
   return (
     <ScrollView className="flex-1 bg-[#070b0f] w-full px-6  pt-4 gap-y-6">
       <List>
@@ -26,6 +31,7 @@ export default function Profile() {
         </ListHeader> */}
         {/* <ThemeSettingItem />
         {Platform.OS !== "web" && <NotificationItem />} */}
+        <Text className="text-white">{JSON.stringify(user)}</Text>
         <ListHeader className="pt-8">
           <Muted>GENERAL</Muted>
         </ListHeader>
@@ -50,6 +56,11 @@ export default function Profile() {
           itemLeft={(props) => <BookOpen {...props} />} // props adds size and color attributes
           label="Terms of service"
           onPress={() => openExternalURL("https://expostarter.com")}
+        />
+        <ListItem
+          itemLeft={(props) => <ArrowBigLeftIcon {...props} />} // props adds size and color attributes
+          label="Logout"
+          onPress={() => setUser(null)}
         />
       </List>
     </ScrollView>
