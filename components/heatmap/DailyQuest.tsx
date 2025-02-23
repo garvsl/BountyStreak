@@ -7,6 +7,7 @@ import MonthlyHeatmap from "@/components/heatmap/CalendarHeatmap";
 import { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { getSpecificUsersQuestData } from "@/firebaseConfig";
+import ProgressButton from "./ProgressCountDown";
 
 const Quest = ({
   questName,
@@ -66,21 +67,6 @@ const Quest = ({
         </View>
       </View>
     </View>
-  );
-};
-
-const ProgressButton = ({ big, small, classN = "" }: any) => {
-  return (
-    <Pressable
-      className={`flex-[1] bg-[#eefafa] rounded-2xl flex flex-col justify-center items-center ${classN} `}
-    >
-      <Text className="font-bold text-[#070b0f] font-[Kica-PERSONALUSE-Light]">
-        {big}
-      </Text>
-      <Text className=" text-[#070b0f] text-xs font-[Kica-PERSONALUSE-Light]">
-        {small}
-      </Text>
-    </Pressable>
   );
 };
 
@@ -185,14 +171,17 @@ export default function DailyQuest() {
               </Button>
             </View>
           </View>
+
           <View className="px-6 flex gap-3 h-16 flex-row">
             <ProgressButton
               classN={"flex-[2]"}
               big={user ? user.doubloons : 0}
               small={"Doubloons"}
             />
-            {/* <ProgressButton big={"3"} small={"Completed"} /> */}
-            <ProgressButton big={"23:54:12"} small={"Remaining"} />
+            <ProgressButton
+              big={""} // The time will be managed by the component
+              small={"Remaining"}
+            />
           </View>
           <View className=" px-6 flex flex-col gap-4">
             {filteredItems.length === 0 ? (
