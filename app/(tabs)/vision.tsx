@@ -1,19 +1,14 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  useWindowDimensions,
-  Image,
-} from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
 import { useRef, useState } from "react";
 import {
   incrementQuestProgressForSpecificUser,
   markQuestCompleteAndUpdateUsersPoints,
 } from "@/firebaseConfig";
 import { useUser } from "@/hooks/useUser";
+import { COLORS, COMMON_STYLES, SHADOWS } from "@/constants/theme";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 // Quest mapping for material types
 interface Quest {
@@ -93,7 +88,6 @@ export default function Vision() {
       });
 
       setLocalQuests(updatedQuests);
-
       setQuests((prev) => prev + 1);
     } catch (error) {
       console.error("Error updating quest progress:", error);
@@ -136,115 +130,220 @@ export default function Vision() {
     }
   };
 
+  if (!permission) {
+    return (
+      <View style={[COMMON_STYLES.container, styles.centeredContainer]}>
+        <MaterialCommunityIcons
+          name="camera-off"
+          size={48}
+          color={COLORS.primary}
+        />
+        <Text style={styles.permissionText}>
+          Please grant camera permission to identify treasures
+        </Text>
+        <TouchableOpacity
+          style={styles.permissionButton}
+          onPress={() => requestPermission()}
+        >
+          <Text style={styles.permissionButtonText}>Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.main}>
-      {permission ? (
-        <>
-          {capturedImage ? (
-            <View style={styles.previewContainer}>
-              <Image
-                source={{ uri: capturedImage }}
-                style={{ height: "78%", width: "100%" }}
-              />
-              <View style={styles.resultContainer}>
-                {isAnalyzing ? (
-                  <Text style={styles.loadingText}>Analyzing image...</Text>
-                ) : (
-                  <Text style={styles.resultText}>{analysisResult}</Text>
-                )}
-                <TouchableOpacity
-                  style={styles.newPhotoButton}
-                  onPress={resetCamera}
-                >
-                  <Text style={styles.buttonText}>Take New Photo</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : (
-            <CameraView
-              ratio="16:9"
-              style={{ ...styles.camera, height: "100%", width: "100%" }}
-              ref={camera}
-              onCameraReady={() => {
-                if (!permission) requestPermission();
-              }}
-            >
-              <View style={styles.bottomCamera}>
-                <TouchableOpacity
-                  style={styles.shutterButton}
-                  onPress={captureImageAsync}
+    <View style={COMMON_STYLES.container}>
+      {capturedImage ? (
+        <View style={styles.previewContainer}>
+          <Image source={{ uri: capturedImage }} style={styles.previewImage} />
+          <View style={styles.resultContainer}>
+            {isAnalyzing ? (
+              <View style={styles.analyzingContainer}>
+                <MaterialCommunityIcons
+                  name="compass"
+                  size={32}
+                  color={COLORS.primary}
+                  style={styles.spinningIcon}
                 />
+                <Text style={styles.analyzingText}>
+                  Identifying treasure...
+                </Text>
               </View>
-            </CameraView>
-          )}
-        </>
-      ) : (
-        <View>
-          <Text>Please provide camera permission.</Text>
+            ) : (
+              <View style={styles.resultTextContainer}>
+                <MaterialCommunityIcons
+                  name={
+                    analysisResult === "None"
+                      ? "close-circle"
+                      : "treasure-chest"
+                  }
+                  size={32}
+                  color={COLORS.primary}
+                />
+                <Text style={styles.resultText}>
+                  {analysisResult === "None"
+                    ? "No recyclable treasure found"
+                    : `Found ${analysisResult} treasure!`}
+                </Text>
+              </View>
+            )}
+            <TouchableOpacity
+              style={styles.newPhotoButton}
+              onPress={resetCamera}
+            >
+              <MaterialCommunityIcons
+                name="camera-retake"
+                size={24}
+                color={COLORS.background}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.buttonText}>Search Again</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+      ) : (
+        <CameraView style={styles.camera} ref={camera}>
+          <View style={styles.cameraOverlay}>
+            <View style={styles.cameraGuide}>
+              <MaterialCommunityIcons
+                name="square-outline"
+                size={250}
+                color={COLORS.primary}
+              />
+              <Text style={styles.guideText}>
+                Align your treasure within the frame
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.captureButton}
+              onPress={captureImageAsync}
+            >
+              <View style={styles.captureButtonInner} />
+            </TouchableOpacity>
+          </View>
+        </CameraView>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  main: {
-    flex: 1,
-    alignSelf: "stretch",
-    alignItems: "center",
+  centeredContainer: {
     justifyContent: "center",
-    backgroundColor: "#000",
+    alignItems: "center",
+    padding: 20,
+  },
+  permissionText: {
+    fontFamily: "Kica-PERSONALUSE-Light",
+    fontSize: 18,
+    color: COLORS.textPrimary,
+    textAlign: "center",
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  permissionButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 16,
+    ...SHADOWS.md,
+  },
+  permissionButtonText: {
+    fontFamily: "Kica-PERSONALUSE-Light",
+    fontSize: 16,
+    color: COLORS.background,
+    fontWeight: "bold",
   },
   camera: {
-    alignSelf: "stretch",
-    flexDirection: "column",
-  },
-  bottomCamera: {
     flex: 1,
-    alignSelf: "stretch",
-    alignItems: "flex-end",
+  },
+  cameraOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 40,
+  },
+  cameraGuide: {
+    flex: 1,
     justifyContent: "center",
-    flexDirection: "row",
-    columnGap: 30,
-    backgroundColor: "transparent",
+    alignItems: "center",
+  },
+  guideText: {
+    fontFamily: "Kica-PERSONALUSE-Light",
+    fontSize: 16,
+    color: COLORS.primary,
+    marginTop: 16,
+    textAlign: "center",
+  },
+  captureButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.backgroundLight,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: COLORS.primary,
+    ...SHADOWS.lg,
+  },
+  captureButtonInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: COLORS.primary,
   },
   previewContainer: {
     flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  previewImage: {
+    height: "70%",
     width: "100%",
   },
   resultContainer: {
+    flex: 1,
     padding: 20,
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.background,
   },
-  loadingText: {
-    color: "#FFF",
-    fontSize: 16,
-    marginBottom: 20,
+  analyzingContainer: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  spinningIcon: {
+    marginBottom: 12,
+  },
+  analyzingText: {
+    fontFamily: "Kica-PERSONALUSE-Light",
+    fontSize: 18,
+    color: COLORS.primary,
+  },
+  resultTextContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 24,
   },
   resultText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 20,
+    fontFamily: "Kica-PERSONALUSE-Light",
+    fontSize: 20,
+    color: COLORS.primary,
+    marginLeft: 12,
   },
   newPhotoButton: {
-    backgroundColor: "#EDF1D6",
-    padding: 15,
-    borderRadius: 25,
-    width: 200,
+    flexDirection: "row",
     alignItems: "center",
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 16,
+    ...SHADOWS.md,
   },
   buttonText: {
+    fontFamily: "Kica-PERSONALUSE-Light",
     fontSize: 16,
+    color: COLORS.background,
     fontWeight: "bold",
-  },
-  shutterButton: {
-    width: 70,
-    height: 70,
-    bottom: 45,
-    borderRadius: 50,
-    backgroundColor: "#FFF",
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

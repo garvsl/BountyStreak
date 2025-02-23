@@ -11,84 +11,133 @@ import {
 import { useSharedValue } from "react-native-reanimated";
 import { useUser } from "@/hooks/useUser";
 import { buyPetItem, listPetItems } from "@/firebaseConfig";
+import { COLORS, COMMON_STYLES, SHADOWS } from "@/constants/theme";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
-const Quest = ({ title, amount, max, onDelete, time = null }) => {
+const { width: screenWidth } = Dimensions.get("window");
+const PADDING = 48;
+const CANVAS_SIZE = screenWidth - PADDING;
+
+const ShopItem = ({ title, amount, max, onDelete, time = null }) => {
   const { user, setUser } = useUser();
-  const filledCount = Math.round((amount / max) * 6);
-  const percentage = Math.round((amount / max) * 100);
 
   const handleBuy = async () => {
     if (user.doubloons >= max) {
       try {
-        console.log("Attempting to buy:", title);
         const success = await buyPetItem(user.uid, title);
-        console.log("Buy item result:", success);
-
-        console.log("Purchase successful, calling onDelete");
-        onDelete(title); // Pass the title to identify which item was purchased
-        setUser((prevUser: any) => ({
+        onDelete(title);
+        setUser((prevUser) => ({
           ...prevUser,
           doubloons: prevUser.doubloons - max,
         }));
       } catch (error) {
         console.error("Error during purchase:", error);
       }
-    } else {
-      console.log("Insufficient funds");
     }
   };
 
+  const canAfford = user.doubloons >= max;
+
   return (
-    <View className="bg-[#40c040] flex flex-col justify-between p-4 w-full gap-8 rounded-2xl">
+    <View
+      style={{
+        backgroundColor: COLORS.backgroundLight,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: COLORS.primary,
+        padding: 16,
+        marginBottom: 12,
+        ...SHADOWS.md,
+      }}
+    >
       <View className="flex flex-row justify-between items-center">
-        <View className="flex flex-row items-center gap-2">
-          <Text className="text-[#eefafa] font-[Kica-PERSONALUSE-Light] font-semibold text-2xl">
+        <View className="flex flex-row items-center gap-3">
+          <MaterialCommunityIcons
+            name={
+              title.toLowerCase().includes("bed")
+                ? "bed"
+                : title.toLowerCase().includes("food")
+                ? "food"
+                : title.toLowerCase().includes("tower")
+                ? "castle"
+                : title.toLowerCase().includes("yarn")
+                ? "spider-thread"
+                : title.toLowerCase().includes("window")
+                ? "window-open"
+                : title.toLowerCase().includes("plant")
+                ? "tree"
+                : "treasure-chest"
+            }
+            size={24}
+            color={COLORS.primary}
+          />
+          <Text
+            style={{
+              fontFamily: "Kica-PERSONALUSE-Light",
+              fontSize: 20,
+              color: COLORS.primary,
+            }}
+          >
             {title}
           </Text>
         </View>
+
         <Pressable
           onPress={handleBuy}
-          className="border p-2 rounded-full border-[#C9E7F2]"
+          disabled={!canAfford}
+          style={({ pressed }) => [
+            {
+              backgroundColor: canAfford
+                ? pressed
+                  ? COLORS.primaryDark
+                  : COLORS.primary
+                : COLORS.backgroundDark,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 12,
+              opacity: canAfford ? 1 : 0.5,
+              ...SHADOWS.sm,
+            },
+          ]}
         >
-          <Text className="font-[Kica-PERSONALUSE-Light] text-white">BUY</Text>
+          <Text
+            style={{
+              fontFamily: "Kica-PERSONALUSE-Light",
+              color: canAfford ? "white" : COLORS.textSecondary,
+              fontWeight: "600",
+            }}
+          >
+            {canAfford ? "BUY" : "NOT ENOUGH"}
+          </Text>
         </Pressable>
       </View>
-      <View className="flex flex-col gap-1">
-        <View className="flex flex-row items-end justify-between">
-          <Text className="font-normal text-[#eefafa] font-[Kica-PERSONALUSE-Light]">
-            {amount}
-            <Text className="text-gray-800 font-light">
-              /{max} {time != null && time}
-            </Text>
-          </Text>
-          <Text className="font-[Kica-PERSONALUSE-Light] text-[#eefafa] text-2xl">
-            {percentage}%
-          </Text>
-        </View>
-        <View className="h-2 flex rounded-full bg-[#171d25] flex-row">
-          {Array(6)
-            .fill(0)
-            .map((_, i) => (
-              <View
-                key={i}
-                className={`h-2 flex-1 ${
-                  i < filledCount ? "bg-[#eefafa]" : ""
-                } ${
-                  i === filledCount - 1
-                    ? "rounded-r-full"
-                    : i === 0 && "rounded-l-full"
-                } ${i === filledCount - 1 && i === 0 && "rounded-full"}`}
-              />
-            ))}
-        </View>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginTop: 12,
+        }}
+      >
+        <MaterialCommunityIcons
+          name="cash"
+          size={20}
+          color={COLORS.primary}
+          style={{ marginRight: 4 }}
+        />
+        <Text
+          style={{
+            fontFamily: "Kica-PERSONALUSE-Light",
+            fontSize: 18,
+            color: COLORS.primary,
+          }}
+        >
+          {max}
+        </Text>
       </View>
     </View>
   );
 };
-
-const { width: screenWidth } = Dimensions.get("window");
-const PADDING = 48;
-const CANVAS_SIZE = screenWidth - PADDING;
 
 export default function Pirate() {
   const { user } = useUser();
@@ -119,7 +168,6 @@ export default function Pirate() {
   const [furniture, setFurniture] = useState([]);
   const [quests, setQuests] = useState([]);
 
-  // Define initial furniture configuration
   const initFurniture = React.useMemo(
     () => [
       {
@@ -174,7 +222,6 @@ export default function Pirate() {
     [bedImage, plantImage, foodImage, catTowerImage, yarnImage, windowImage]
   );
 
-  // Animation effect
   useEffect(() => {
     const interval = setInterval(() => {
       counter.value = (counter.value + 1) % 2;
@@ -182,35 +229,27 @@ export default function Pirate() {
     return () => clearInterval(interval);
   }, [counter]);
 
-  // Load initial data
   useEffect(() => {
     const fetchQuestsAndFurniture = async () => {
       try {
-        console.log("Fetching initial data...");
         const purchasedItems = (await listPetItems(user.uid)) || [];
-        console.log("Purchased items:", purchasedItems);
 
         const initialQuests = [
-          { id: 1, title: "Feed Your Pet", amount: user.doubloons, max: 50 },
-          { id: 2, title: "Bed", amount: user.doubloons, max: 100 },
-          { id: 3, title: "Cat Tower", amount: user.doubloons, max: 150 },
-          { id: 4, title: "Yarn", amount: user.doubloons, max: 155 },
-          { id: 5, title: "Window", amount: user.doubloons, max: 300 },
-          { id: 6, title: "Plant", amount: user.doubloons, max: 500 },
+          { id: 6, title: "Feed Your Pet", amount: user.doubloons, max: 50 },
+          { id: 1, title: "Bed", amount: user.doubloons, max: 100 },
+          { id: 2, title: "Cat Tower", amount: user.doubloons, max: 150 },
+          { id: 3, title: "Yarn", amount: user.doubloons, max: 155 },
+          { id: 4, title: "Window", amount: user.doubloons, max: 300 },
+          { id: 5, title: "Plant", amount: user.doubloons, max: 500 },
         ];
 
-        // Filter quests to remove purchased items
-        const filteredQuests = initialQuests.filter(
+        const filteredQuests: any = initialQuests.filter(
           (quest) => !purchasedItems.includes(quest.title)
         );
 
-        // Filter furniture to only show purchased items
-        const filteredFurniture = initFurniture.filter((item) =>
+        const filteredFurniture: any = initFurniture.filter((item) =>
           purchasedItems.includes(item.title)
         );
-
-        console.log("Setting initial furniture:", filteredFurniture);
-        console.log("Setting initial quests:", filteredQuests);
 
         setQuests(filteredQuests);
         setFurniture(filteredFurniture);
@@ -235,134 +274,161 @@ export default function Pirate() {
   });
 
   const removeQuest = async (title) => {
-    console.log("removeQuest called with title:", title);
+    setQuests((prevQuests) =>
+      prevQuests.filter((quest) => quest.title !== title)
+    );
 
-    // Remove the quest
-    setQuests((prevQuests) => {
-      const newQuests = prevQuests.filter((quest) => quest.title !== title);
-      console.log("Updated quests:", newQuests);
-      return newQuests;
-    });
-
-    // Add the furniture
     const newFurnitureItem = initFurniture.find((item) => item.title === title);
     if (newFurnitureItem) {
-      console.log("Adding new furniture item:", newFurnitureItem);
-      setFurniture((prev) => {
-        const newFurniture = [...prev, newFurnitureItem];
-        console.log("Updated furniture:", newFurniture);
-        return newFurniture;
-      });
+      setFurniture((prev) => [...prev, newFurnitureItem]);
     }
 
-    // Refresh the furniture list from Firebase to ensure sync
     try {
       const purchasedItems = await listPetItems(user.uid);
-      console.log("Refreshed purchased items:", purchasedItems);
       const updatedFurniture = initFurniture.filter((item) =>
         purchasedItems.includes(item.title)
       );
-      console.log("Setting furniture after refresh:", updatedFurniture);
       setFurniture(updatedFurniture);
     } catch (error) {
       console.error("Error refreshing furniture:", error);
     }
   };
 
-  // Debug useEffect to monitor state changes
-  useEffect(() => {
-    console.log("Furniture state updated:", furniture);
-  }, [furniture]);
-
-  useEffect(() => {
-    console.log("Quests state updated:", quests);
-  }, [quests]);
-
   return (
-    <View className="flex-1 bg-[#070b0f]">
-      <View className="px-6">
-        <Text className="text-3xl text-[#E6F4F4] font-[Kica-PERSONALUSE-Light] border-b-[#E6F4F4]">
-          YOUR PIRATE
-        </Text>
-        <View className="py-3 pb-4">
-          <View
+    <View style={COMMON_STYLES.container}>
+      {/* Ship View */}
+      <View style={{ padding: 24 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="sail-boat"
+            size={28}
+            color={COLORS.primary}
+            style={{ marginRight: 8 }}
+          />
+          <Text
             style={{
-              width: CANVAS_SIZE,
-              height: CANVAS_SIZE,
-              borderRadius: 16,
-              overflow: "hidden",
-              backgroundColor: "white",
+              fontFamily: "Kica-PERSONALUSE-Light",
+              fontSize: 28,
+              color: COLORS.primary,
+              borderBottomWidth: 2,
+              borderBottomColor: COLORS.primary,
             }}
           >
-            <Canvas
-              style={{
-                width: CANVAS_SIZE,
-                height: CANVAS_SIZE,
-              }}
-            >
-              {backgroundImage && (
-                <Image
-                  image={backgroundImage}
-                  x={0}
-                  y={0}
-                  width={CANVAS_SIZE}
-                  height={CANVAS_SIZE}
-                  fit="contain"
-                />
-              )}
+            YOUR SHIP
+          </Text>
+        </View>
 
-              {furniture.map(
-                (item, index) =>
-                  item.image && (
-                    <Image
-                      key={index}
-                      image={item.image}
-                      x={item.x}
-                      y={item.y}
-                      width={item.width}
-                      height={item.height}
-                    />
-                  )
-              )}
+        <View
+          style={{
+            width: CANVAS_SIZE,
+            height: CANVAS_SIZE,
+            borderRadius: 16,
+            overflow: "hidden",
+            borderWidth: 1,
+            borderColor: COLORS.primary,
+            ...SHADOWS.lg,
+          }}
+        >
+          <Canvas style={{ width: CANVAS_SIZE, height: CANVAS_SIZE }}>
+            {backgroundImage && (
+              <Image
+                image={backgroundImage}
+                x={0}
+                y={0}
+                width={CANVAS_SIZE}
+                height={CANVAS_SIZE}
+                fit="contain"
+              />
+            )}
 
-              {spriteMap && (
-                <Atlas
-                  image={spriteMap}
-                  sprites={sprites}
-                  transforms={transforms}
-                />
-              )}
-            </Canvas>
-          </View>
+            {furniture.map(
+              (item, index) =>
+                item.image && (
+                  <Image
+                    key={index}
+                    image={item.image}
+                    x={item.x}
+                    y={item.y}
+                    width={item.width}
+                    height={item.height}
+                  />
+                )
+            )}
+
+            {spriteMap && (
+              <Atlas
+                image={spriteMap}
+                sprites={sprites}
+                transforms={transforms}
+              />
+            )}
+          </Canvas>
         </View>
       </View>
 
-      <View className="flex flex-col gap-3">
-        <View className="flex px-6 flex-row items-center">
-          <Text className="text-3xl text-[#E6F4F4] font-[Kica-PERSONALUSE-Light] border-b-[#E6F4F4]">
-            SHOP --
+      {/* Shop Section */}
+      <View style={{ flex: 1 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 24,
+            marginBottom: 16,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="store"
+            size={28}
+            color={COLORS.primary}
+            style={{ marginRight: 8 }}
+          />
+          <Text
+            style={{
+              fontFamily: "Kica-PERSONALUSE-Light",
+              fontSize: 28,
+              color: COLORS.primary,
+              borderBottomWidth: 2,
+              borderBottomColor: COLORS.primary,
+            }}
+          >
+            SHIP SHOP
           </Text>
-          <Text className="text-xl text-[#E6F4F4] font-[Kica-PERSONALUSE-Light] border-b-[#E6F4F4]">
-            {" "}
-            DOUBLOONS: {user.doubloons}
-          </Text>
-        </View>
-        <ScrollView className="px-6">
-          <View className="flex flex-col gap-4">
-            {quests.map((quest) => (
-              <Quest
-                key={quest.id}
-                title={quest.title}
-                amount={quest.amount}
-                max={quest.max}
-                onDelete={removeQuest}
-              />
-            ))}
-            <View className="bg-transparent w-full h-36 rounded-2xl" />
-            <View className="bg-transparent w-full h-36 rounded-2xl" />
-            <View className="bg-transparent w-full h-36 rounded-2xl" />
-            <View className="bg-transparent w-full h-36 rounded-2xl" />
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginLeft: "auto",
+            }}
+          >
+            <MaterialCommunityIcons
+              name="cash"
+              size={20}
+              color={COLORS.primary}
+              style={{ marginRight: 4 }}
+            />
+            <Text
+              style={{
+                fontFamily: "Kica-PERSONALUSE-Light",
+                fontSize: 20,
+                color: COLORS.primary,
+              }}
+            >
+              {user.doubloons}
+            </Text>
           </View>
+        </View>
+
+        <ScrollView style={{ paddingHorizontal: 24 }}>
+          {quests.map((quest) => (
+            <ShopItem key={quest.id} {...quest} onDelete={removeQuest} />
+          ))}
+          <View style={{ height: 100 }} />
         </ScrollView>
       </View>
     </View>
