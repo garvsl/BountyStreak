@@ -1,11 +1,21 @@
-import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import React, { useEffect } from "react";
+import { Dimensions, Pressable, ScrollView, Text, View } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import {
+  Skia,
+  Canvas,
+  Atlas,
+  Image,
+  rect,
+  useRectBuffer,
+  useImage,
+  useRSXformBuffer,
+} from "@shopify/react-native-skia";
+import { useSharedValue } from "react-native-reanimated";
 
 const Quest = ({ title, amount, max, time = null }: any) => {
   const filledCount = Math.round((amount / max) * 6);
   const percentage = Math.round((amount / max) * 100);
-
   return (
     <View className="bg-[#40c040] flex flex-col justify-between  p-4 w-full gap-8 rounded-2xl">
       <View className="flex flex-row justify-between items-center">
@@ -55,16 +65,96 @@ const Quest = ({ title, amount, max, time = null }: any) => {
     </View>
   );
 };
+const { width: screenWidth } = Dimensions.get("window");
+const PADDING = 48; // 24px padding on each side
+const CANVAS_SIZE = screenWidth - PADDING; // Square canvas
 
 export default function Pirate() {
+  const counter = useSharedValue(0);
+  const xPosition = useSharedValue(CANVAS_SIZE / 2);
+  const yPosition = useSharedValue(CANVAS_SIZE / 2);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      counter.value = (counter.value + 1) % 2;
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const spriteMap = useImage(
+    require("../../assets/sprite/FreePiratePack/PirateCats/PirateCat2.png")
+  );
+
+  const backgroundImage = useImage(
+    require("../../assets/sprite/CatRoomFree/Room1.png")
+  );
+
+  const sprites = useRectBuffer(1, (rect, i) => {
+    "worklet";
+    let frameSelect;
+    if (!counter) {
+      frameSelect = 0;
+    } else {
+      frameSelect = 32 * Math.floor(counter.value);
+    }
+    rect.setXYWH(frameSelect, 0, 32, 32);
+  });
+
+  // Adjusted scale and positioning for isometric view
+  const scale = 1.7; // Smaller scale for the sprite
+  const transforms = [
+    Skia.RSXform(
+      scale,
+      0, // Remove rotation to match the background perspective
+      xPosition.value,
+      yPosition.value
+    ),
+  ];
+
   return (
-    <View className="flex-1  bg-[#070b0f] px-6">
-      <Text className="text-3xl text-[#E6F4F4]   font-[Kica-PERSONALUSE-Light]  border-b-[#E6F4F4] ">
+    <View className="flex-1 bg-[#070b0f] px-6">
+      <Text className="text-3xl text-[#E6F4F4] font-[Kica-PERSONALUSE-Light] border-b-[#E6F4F4]">
         PIRATE
       </Text>
       <View className="py-3 pb-4">
-        <View className="h-[28rem] rounded-2xl bg-white "></View>
+        <View
+          style={{
+            width: CANVAS_SIZE,
+            height: CANVAS_SIZE,
+            borderRadius: 16,
+            overflow: "hidden",
+            backgroundColor: "white",
+          }}
+        >
+          <Canvas
+            style={{
+              width: CANVAS_SIZE,
+              height: CANVAS_SIZE,
+            }}
+          >
+            {backgroundImage && (
+              <Image
+                image={backgroundImage}
+                x={0}
+                y={0}
+                width={CANVAS_SIZE}
+                height={CANVAS_SIZE}
+                fit="contain"
+              />
+            )}
+
+            {spriteMap && (
+              <Atlas
+                image={spriteMap}
+                sprites={sprites}
+                transforms={transforms}
+              />
+            )}
+          </Canvas>
+        </View>
       </View>
+
       <View className="flex flex-col gap-3">
         <View className="flex  flex-row items-center  ">
           <Text className="text-3xl text-[#E6F4F4]   font-[Kica-PERSONALUSE-Light]  border-b-[#E6F4F4] ">
