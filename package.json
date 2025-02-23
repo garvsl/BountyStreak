@@ -46,7 +46,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "0.38.4",
     "drizzle-zod": "^0.5.1",
-    "expo": "^52.0.37",
+    "expo": "~52.0.27",
     "expo-camera": "~16.0.17",
     "expo-dev-client": "~5.0.10",
     "expo-font": "~13.0.3",
