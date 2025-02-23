@@ -106,7 +106,7 @@ export default function DailyQuest() {
     }
   };
 
-  const { user } = useUser();
+  const { user, quests, localQuests, setLocalQuests } = useUser();
 
   useEffect(() => {
     (async () => {
@@ -114,8 +114,14 @@ export default function DailyQuest() {
       console.log(res);
       setDefaultItems(res);
       setFilteredItems(res);
+      setLocalQuests(res);
     })();
-  }, [user]);
+  }, [user, quests]);
+
+  useEffect(() => {
+    setDefaultItems(localQuests);
+    setFilteredItems(localQuests);
+  }, [localQuests]);
 
   return (
     <ScrollView className="bg-[#070b0f]">
