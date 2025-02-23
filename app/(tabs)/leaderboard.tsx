@@ -90,10 +90,6 @@ export default function Leaderboard() {
     })();
   }, []);
 
-  if (loading) {
-    return <Quest title={"Loading..."} amount={0} max={0} />;
-  }
-
   return (
     <ScrollView className="bg-[#070b0f]">
       <View className="flex  flex-col mt-2 gap-4">
