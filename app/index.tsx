@@ -40,7 +40,7 @@ export default function Home() {
         <View className="flex flex-col gap-2">
           <TextInput
             className="bg-white p-3 text-lg border border-black rounded-2xl"
-            placeholder="email"
+            placeholder="username"
             onChangeText={(e) => setUsername(e)}
             value={username}
           />
