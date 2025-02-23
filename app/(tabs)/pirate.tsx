@@ -89,7 +89,6 @@ export default function Pirate() {
   const backgroundImage = useImage(
     require("../../assets/sprite/CatRoomFree/Room1.png")
   );
-
   const sprites = useRectBuffer(1, (rect, i) => {
     "worklet";
     let frameSelect;
@@ -101,16 +100,11 @@ export default function Pirate() {
     rect.setXYWH(frameSelect, 0, 32, 32);
   });
 
-  // Adjusted scale and positioning for isometric view
-  const scale = 1.7; // Smaller scale for the sprite
-  const transforms = [
-    Skia.RSXform(
-      scale,
-      0, // Remove rotation to match the background perspective
-      xPosition.value,
-      yPosition.value
-    ),
-  ];
+  const transforms = useRSXformBuffer(1, (transform, i) => {
+    "worklet";
+    const scale = 1.7;
+    transform.set(scale, 0, xPosition.value, yPosition.value);
+  });
 
   return (
     <View className="flex-1 bg-[#070b0f] px-6">
