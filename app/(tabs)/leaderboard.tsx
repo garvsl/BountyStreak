@@ -77,7 +77,15 @@ export default function Leaderboard() {
           };
         })
       );
-      setFilteredItems(defaultItems);
+      setFilteredItems(
+        res.map((e: any) => {
+          return {
+            id: e.id,
+            title: e.username,
+            amount: e.doubloons,
+          };
+        })
+      );
       setLoading(false);
     })();
   }, []);
