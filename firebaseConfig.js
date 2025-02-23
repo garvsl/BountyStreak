@@ -239,42 +239,35 @@ export async function getSpecificUsersQuestData(uid) {
     return [];
   }
 }
-
 export async function incrementQuestProgressForSpecificUser(uid, questName) {
   try {
     // get the specific quest for this particular uid first
-    const questSnapshot = await getSpecificUsersQuestData(uid);
-    // console.log(questSnapshot)
-    questSnapshot.forEach((quest) => {
-      if (quest.data().questName == questName) {
-        // increment current progress by 1
-        if (quest.data().currentProgress < quest.data().maxProgress) {
-          const docRef = quest.ref;
-          updateDoc(docRef, {
-            currentProgress: quest.data().currentProgress + 1,
-          })
-            .then(() => {
-              console.log(`SUCCESS: Quest ${questName} progress updated by 1.`);
+    const quests = await getSpecificUsersQuestData(uid);
 
-              if (
-                quest.data().currentProgress + 1 >=
-                quest.data().maxProgress
-              ) {
-                console.log("yeen we neda update quest as completed");
-                markQuestCompleteAndUpdateUsersPoints(uid, questName);
-              }
-            })
-            .catch((err) => {
-              console.log(
-                `ERROR: Quest ${questName}'s progress could not be incremented. Err: ${err}`
-              );
-            });
-        }
-        return;
+    const questToUpdate = quests.find((quest) => quest.questName === questName);
+
+    if (!questToUpdate) {
+      console.log(`Quest ${questName} not found for user ${uid}`);
+      return;
+    }
+
+    if (questToUpdate.currentProgress < questToUpdate.maxProgress) {
+      const docRef = doc(db, "User", uid, "usersQuest", questToUpdate.id);
+      const newProgress = questToUpdate.currentProgress + 1;
+
+      await updateDoc(docRef, {
+        currentProgress: newProgress,
+      });
+
+      console.log(`SUCCESS: Quest ${questName} progress updated by 1.`);
+
+      if (newProgress >= questToUpdate.maxProgress) {
+        console.log("Quest completed, updating rewards");
+        await markQuestCompleteAndUpdateUsersPoints(uid, questName);
       }
-    });
+    }
   } catch (error) {
-    console.log(error);
+    console.log("Error updating quest progress:", error);
   }
 }
 
