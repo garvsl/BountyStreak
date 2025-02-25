@@ -1,5 +1,5 @@
 # Bounty Streak
-Save the seven seas and grow yer own digital pirate pet by tracking your recyclables one at a time! Each disposable you scan & recycle through our app gives you pet growth, doubloons, and real impact!
+Save the seven seas and grow yer own digital pirate pet by tracking your recyclables one at a time! Each disposable you scan & recycle through our app gives you pet growth, doubloons, and real impact!!
 
 ## Inspiration
 Research has found that less than a _third_ of young adults recycle on a regular basis! This alarming statistic prompted us to create Bounty Streak—an app that makes recycling way more fun by letting you scan every disposable you recycle via phone camera and and automatically granting you progress towards growing your very own digital **pirate pet**! Bounty Streak is specially designed to keep you engaged and incentivized to recycle by _gamifying_ the process using streaks, doubloons, quests and much more—letting you save the seven seas one recyclable at a time. Additional research from Harvard has shown that gamification can increase retention and engagement by **48%**!
